@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">Anagram Game</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_start">StartActivity</string>
+
+    <string-array name="players_array">
+        <item>1 Player</item>
+        <item>2 Players</item>
+        <item>3 Players</item>
+        <item>4 Players</item>
+        <item>5 Players</item>
+    </string-array>
+
+    <string-array name="turnTime_array">
+        <item>30 Seconds</item>
+        <item>45 Seconds</item>
+        <item>60 Seconds</item>
+        <item>90 Seconds</item>
+        <item>120 Seconds</item>
+    </string-array>
+
+    <string-array name="rounds_array">
+        <item>3 Rounds</item>
+        <item>5 Rounds</item>
+        <item>7 Rounds</item>
+        <item>10 Rounds</item>
+    </string-array>
+
+</resources>
