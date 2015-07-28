@@ -6,7 +6,6 @@
     <string name="title_activity_start">StartActivity</string>
 
     <string-array name="players_array">
-        <item>1 Player</item>
         <item>2 Players</item>
         <item>3 Players</item>
         <item>4 Players</item>
@@ -27,5 +26,6 @@
         <item>7 Rounds</item>
         <item>10 Rounds</item>
     </string-array>
+    <string name="title_activity_main_menu">MainMenuActivity</string>
 
 </resources>

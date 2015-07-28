@@ -43,7 +43,7 @@ public class MainActivity extends Activity {
 
 
     DraggableGridView dgv;
-    char[] anagramSeed = "eee aaa polkui".toCharArray();
+    char[] anagramSeed = "this is a very long sentence indeed".toCharArray();
     ArrayList<String> sentence = new ArrayList<String>();
     String TAG = "MainActivity";
     int players, turnTime, rounds;
@@ -59,12 +59,11 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         context = this;
         dgv = (DraggableGridView) findViewById(R.id.gridView);
-        dgv.setColCount(anagramSeed.length);
+        dgv.setColCount(anagramSeed.length / 3);
 
         Intent intent = getIntent();
         players = intent.getIntExtra("PLAYERS", 2);
         turnTime = intent.getIntExtra("TIME", 30);
-        turnTime = 5;
         rounds = intent.getIntExtra("ROUNDS", 3);
 
         //Save Game Meta data to cloud

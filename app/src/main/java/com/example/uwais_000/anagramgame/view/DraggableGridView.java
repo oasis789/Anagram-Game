@@ -28,7 +28,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
 
-public class DraggableGridView extends ViewGroup implements View.OnTouchListener, View.OnClickListener, View.OnLongClickListener {
+public class DraggableGridView extends ViewGroup implements View.OnTouchListener {
 	//layout vars
 	public static float childRatio = .9f;
     protected int colCount, childSize, padding, dpi, scroll = 0;
@@ -60,8 +60,8 @@ public class DraggableGridView extends ViewGroup implements View.OnTouchListener
     protected void setListeners()
     {
     	setOnTouchListener(this);
-    	super.setOnClickListener(this);
-        setOnLongClickListener(this);
+    	//super.setOnClickListener(this);
+        //setOnLongClickListener(this);
     }
 
     public void setColCount(int colCount){
@@ -113,7 +113,7 @@ public class DraggableGridView extends ViewGroup implements View.OnTouchListener
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
     	//compute width of view, in dp
-        scroll = - this.getHeight() / 2;
+        scroll = - this.getHeight() / 2 + this.getTop();
         //float w = (r - l) / (dpi / 160f);
         //determine number of columns, at least 2
         //colCount = 2;
@@ -211,7 +211,7 @@ public class DraggableGridView extends ViewGroup implements View.OnTouchListener
     }
     
     //EVENT HANDLERS
-    public void onClick(View view) {
+   /** public void onClick(View view) {
     	if (enabled)
     	{
     		if (secondaryOnClickListener != null)
@@ -219,9 +219,11 @@ public class DraggableGridView extends ViewGroup implements View.OnTouchListener
     		if (onItemClickListener != null && getLastIndex() != -1)
     			onItemClickListener.onItemClick(null, getChildAt(getLastIndex()), getLastIndex(), getLastIndex() / colCount);
     	}
-    }
 
-    public boolean onLongClick(View view)
+
+    }*/
+
+    /**public boolean onLongClick(View view)
     {
     	if (!enabled)
     		return false;
@@ -233,15 +235,26 @@ public class DraggableGridView extends ViewGroup implements View.OnTouchListener
             return true;
         }
         return false;
-    }
+    }*/
+
     public boolean onTouch(View view, MotionEvent event)
     {
         int action = event.getAction();
            switch (action & MotionEvent.ACTION_MASK) {
                case MotionEvent.ACTION_DOWN:
             	   enabled = true;
+
                    lastX = (int) event.getX();
                    lastY = (int) event.getY();
+
+                   //int index = getLastIndex();
+                   int index = getIndexFromCoor(lastX, lastY);
+                   if (index != -1)
+                   {
+                       dragged = index;
+                       animateDragged();
+                       //return true;
+                   }
                    touching = true;
                    break;
                case MotionEvent.ACTION_MOVE:
