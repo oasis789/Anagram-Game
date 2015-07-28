@@ -12,6 +12,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
+import com.parse.ParseObject;
+
 
 public class StartActivity extends ActionBarActivity implements AdapterView.OnItemSelectedListener {
 
@@ -25,6 +27,7 @@ public class StartActivity extends ActionBarActivity implements AdapterView.OnIt
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
+
         //Integer arrays of the equivalent data used in string arrays to populate spinners
         playerArray = new int[] {1,2,3,4,5};
         timeArray = new int[] {30,45,60,90,120};
