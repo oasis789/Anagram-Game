@@ -5,48 +5,30 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Rect;
 import android.os.CountDownTimer;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.text.Layout;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RadioGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.uwais_000.anagramgame.view.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
 
 
 public class MainActivity extends Activity {
 
 
     DraggableGridView dgv;
-    char[] anagramSeed = "this is a very long sentence indeed".toCharArray();
+    char[] anagramSeed = "aaa b c d eeee f g iii l m nn oo rr ss tt u             ".toCharArray();
     ArrayList<String> sentence = new ArrayList<String>();
+    ArrayList<String> localGameState = new ArrayList<String>();
     String TAG = "MainActivity";
-    int players, turnTime, rounds;
+    int numberOfPlayers, turnTime, numberOfRounds;
     TextView tvActivePlayer, tvTimeLeft, tvRound;
     int activePlayer, roundNumber;
     CountDownTimer timer;
@@ -59,18 +41,19 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         context = this;
         dgv = (DraggableGridView) findViewById(R.id.gridView);
-        dgv.setColCount(anagramSeed.length / 3);
+        Log.v(TAG, String.valueOf(anagramSeed.length/4));
+        dgv.setColCount(anagramSeed.length / 4);
 
         Intent intent = getIntent();
-        players = intent.getIntExtra("PLAYERS", 2);
-        turnTime = intent.getIntExtra("TIME", 30);
-        rounds = intent.getIntExtra("ROUNDS", 3);
+        numberOfPlayers = intent.getIntExtra(GameMetaData.NUMBER_OF_PLAYERS_KEY, 2);
+        turnTime = intent.getIntExtra(GameMetaData.TURN_TIME_KEY, 30);
+        numberOfRounds = intent.getIntExtra(GameMetaData.NUMBER_OF_ROUNDS_KEY, 3);
 
-        //Save Game Meta data to cloud
+        //Save Game meta-data to cloud
         gameMetaData = new GameMetaData();
-        gameMetaData.setNumberOfPlayers(players);
+        gameMetaData.setNumberOfPlayers(numberOfPlayers);
         gameMetaData.setStringSeed(String.valueOf(anagramSeed));
-        gameMetaData.setNumberOfRounds(rounds);
+        gameMetaData.setNumberOfRounds(numberOfRounds);
         gameMetaData.setTurnTime(turnTime);
         gameMetaData.setGameFinishedState(false);
         gameMetaData.saveInBackground();
@@ -87,40 +70,52 @@ public class MainActivity extends Activity {
             public void onFinish() {
                 tvTimeLeft.setText("0 Seconds");
                 Toast.makeText(getApplicationContext(), "Times Up!!", Toast.LENGTH_SHORT).show();
-                Log.v(TAG, "End of turn: " + sentence);
+                Log.v(TAG, "End of turn: " + getString(sentence));
 
+                localGameState.add(getString(sentence));
                 //Save current game state in the cloud
                 GameStateData gameStateData = new GameStateData();
                 gameStateData.setCurrentPlayer(activePlayer);
                 gameStateData.setCurrentRound(roundNumber);
                 gameStateData.setGameMetaData(gameMetaData);
-                gameStateData.setGameStateData(sentence.toString());
+                gameStateData.setGameStateData(getString(sentence));
                 gameStateData.saveInBackground();
 
                 activePlayer++;
 
                 // If new round
-                if(activePlayer > players){
+                if(activePlayer > numberOfPlayers){
                     activePlayer = 1;
                     roundNumber ++;
                 }
 
-                if(roundNumber > rounds){
+                if(roundNumber > numberOfRounds){
                     //Finish the game
                     Toast.makeText(getApplicationContext(), "Finished!", Toast.LENGTH_SHORT).show();
                     gameMetaData.setGameFinishedState(true);
                     gameMetaData.saveInBackground();
 
+                    for(String s:localGameState){
+                        Log.v(TAG, "Game State " + s);
+                    }
+
                     AlertDialog finishDialog = new AlertDialog.Builder(context)
                             .setMessage("The game is now finished!")
-                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            .setPositiveButton("View Game Summary", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
+                                    //Start Game Summary Activity
+                                    Intent i = new Intent(getApplicationContext(), GameResultsActivity.class);
+                                    i.putStringArrayListExtra(GameStateData.GAME_STATE_DATA_KEY, localGameState);
+                                    i.putExtra(GameMetaData.NUMBER_OF_PLAYERS_KEY, numberOfPlayers);
+                                    startActivity(i);
                                     finish();
                                 }
                             }).setCancelable(false).create();
                     finishDialog.show();
                     timer.cancel();
+
+
                 }else{
                     //Dialog asking user to pass device
                     AlertDialog dialog = new AlertDialog.Builder(context)
@@ -154,6 +149,15 @@ public class MainActivity extends Activity {
         playGame();
     }
 
+    private String getString(ArrayList<String> sentence){
+        String s = sentence.toString();
+        //Remove brackets from start and end of string
+        s = s.substring(1,s.length() - 1);
+        //Remove commas in the string
+        s = s.replaceAll(",", "");
+        return s;
+    }
+
     private void createLayout() {
         for (char letter: anagramSeed){
             TextView view = new TextView(MainActivity.this);
@@ -169,6 +173,8 @@ public class MainActivity extends Activity {
             dgv.addView(view);
             sentence.add(String.valueOf(letter));
         }
+
+        localGameState.add(getString(sentence));
 
         dgv.setOnRearrangeListener(new OnRearrangeListener() {
             public void onRearrange(int oldIndex, int newIndex) {

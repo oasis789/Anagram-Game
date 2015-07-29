@@ -27,5 +27,6 @@
         <item>10 Rounds</item>
     </string-array>
     <string name="title_activity_main_menu">MainMenuActivity</string>
+    <string name="title_activity_game_results">GameResultsActivity</string>
 
 </resources>
