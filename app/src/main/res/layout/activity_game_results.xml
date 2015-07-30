@@ -29,7 +29,7 @@
            android:layout_height="wrap_content"
            android:layout_gravity="center"
            android:gravity="center">
-           <TextView android:layout_height="fill_parent" android:layout_width="wrap_content" android:text="Player Number" android:layout_gravity="center" android:textSize="18dp" android:padding="5dp" android:textStyle="bold"/>
+           <TextView android:layout_height="fill_parent" android:layout_width="wrap_content" android:text="Game Stage" android:layout_gravity="center" android:textSize="18dp" android:padding="5dp" android:textStyle="bold" />
            <TextView android:layout_height="fill_parent" android:layout_width="wrap_content" android:text="Anagram Sentence" android:layout_gravity="center" android:textSize="18dp" android:padding="5dp" android:textStyle="bold"/>
        </TableRow>
 

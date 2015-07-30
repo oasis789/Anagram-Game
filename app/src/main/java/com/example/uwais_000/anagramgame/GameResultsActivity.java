@@ -37,12 +37,13 @@ public class GameResultsActivity extends ActionBarActivity {
 
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         int currentPlayer = 1;
+        int currentRound = 1;
 
         for(String s:localGameState){
             TableRow tableRow = (TableRow) inflater.inflate(R.layout.game_result_table_row, null);
             TextView tvPlayer = (TextView) tableRow.findViewById(R.id.tvResultPlayerNum);
             TextView tvString = (TextView) tableRow.findViewById(R.id.tvResultString);
-            tvPlayer.setText(String.valueOf(currentPlayer));
+            tvPlayer.setText("Round " + currentRound + " - Player " + currentPlayer);
             tvString.setText(s);
 
             table.addView(tableRow);
@@ -50,6 +51,7 @@ public class GameResultsActivity extends ActionBarActivity {
             currentPlayer++;
             if(currentPlayer > numberOfPlayers){
                 currentPlayer = 1;
+                currentRound++;
             }
 
         }

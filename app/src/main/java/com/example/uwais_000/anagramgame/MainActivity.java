@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.CountDownTimer;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -41,7 +42,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         context = this;
         dgv = (DraggableGridView) findViewById(R.id.gridView);
-        Log.v(TAG, String.valueOf(anagramSeed.length/4));
+        Log.v(TAG, String.valueOf(anagramSeed.length / 4));
         dgv.setColCount(anagramSeed.length / 4);
 
         Intent intent = getIntent();
@@ -59,17 +60,25 @@ public class MainActivity extends Activity {
         gameMetaData.saveInBackground();
 
         createLayout();
+        final Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 
         timer = new CountDownTimer(turnTime*1000, 1000){
+
             @Override
             public void onTick(long millisUntilFinished) {
                 tvTimeLeft.setText(millisUntilFinished / 1000 + " Seconds");
+                if(millisUntilFinished / 1000 < 6) {
+                    v.vibrate(250);
+                    tvTimeLeft.setTextColor(Color.RED);
+                }
             }
 
             @Override
             public void onFinish() {
                 tvTimeLeft.setText("0 Seconds");
-                Toast.makeText(getApplicationContext(), "Times Up!!", Toast.LENGTH_SHORT).show();
+                v.vibrate(500);
+                tvTimeLeft.setTextColor(Color.BLACK);
+                //Toast.makeText(getApplicationContext(), "Times Up!!", Toast.LENGTH_SHORT).show();
                 Log.v(TAG, "End of turn: " + getString(sentence));
 
                 localGameState.add(getString(sentence));
