@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/llPlayers"
         android:layout_alignParentLeft="true"
-        android:textSize="24dp"
+        android:textSize="24sp"
         android:text="Please select game settings"
         android:padding="10dp"
         android:textStyle="bold"
@@ -31,7 +31,7 @@
             android:layout_width="0dp"
             android:layout_height="fill_parent"
             android:text="Number Of Players"
-            android:textSize="16dp"
+            android:textSize="18sp"
             android:id="@+id/tvPlayers"
             android:gravity="left"
             android:layout_weight="1"
@@ -63,7 +63,7 @@
             android:layout_height="fill_parent"
             android:text="Round Time"
             android:id="@+id/tvTime"
-            android:textSize="16dp"
+            android:textSize="18sp"
             android:gravity="left"
             android:layout_weight="1" />
 
@@ -91,7 +91,7 @@
             android:layout_height="fill_parent"
             android:text="Number of Rounds"
             android:id="@+id/tvRounds"
-            android:textSize="16dp"
+            android:textSize="18sp"
             android:gravity="left"
             android:layout_weight="1" />
 
@@ -110,7 +110,7 @@
         android:layout_alignParentRight="true"
         android:id="@+id/btnPlay"
         android:text="Play"
-        android:textSize="16dp"
-        android:padding="10dp" />
+        android:textSize="24sp"
+        android:layout_margin="10dp" />
 
 </RelativeLayout>

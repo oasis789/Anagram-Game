@@ -5,9 +5,11 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.CountDownTimer;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Vibrator;
 import android.util.Log;
 import android.view.Gravity;
@@ -18,23 +20,27 @@ import android.widget.Toast;
 
 import com.example.uwais_000.anagramgame.view.*;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 
 
 public class MainActivity extends Activity {
 
 
-    DraggableGridView dgv;
-    char[] anagramSeed = "aaa b c d eeee f g iii l m nn oo rr ss tt u             ".toCharArray();
-    ArrayList<String> sentence = new ArrayList<String>();
-    ArrayList<String> localGameState = new ArrayList<String>();
-    String TAG = "MainActivity";
-    int numberOfPlayers, turnTime, numberOfRounds;
-    TextView tvActivePlayer, tvTimeLeft, tvRound;
-    int activePlayer, roundNumber;
-    CountDownTimer timer;
-    Context context;
-    GameMetaData gameMetaData;
+    private DraggableGridView dgv;
+    private char[] anagramSeed = "aaa b c d eeee f g iii l m nn oo rr ss tt u             ".toCharArray();
+    private ArrayList<String> sentence = new ArrayList<String>();
+    private ArrayList<String> localGameState = new ArrayList<String>();
+    private String TAG = "MainActivity";
+    private int numberOfPlayers, turnTime, numberOfRounds;
+    private TextView tvActivePlayer, tvTimeLeft, tvRound;
+    private int activePlayer, roundNumber;
+    private CountDownTimer timer;
+    private Context context;
+    private GameMetaData gameMetaData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +65,10 @@ public class MainActivity extends Activity {
         gameMetaData.setGameFinishedState(false);
         gameMetaData.saveInBackground();
 
+
         createLayout();
+
+        final ColorStateList defaultTextColor = tvTimeLeft.getTextColors();
         final Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 
         timer = new CountDownTimer(turnTime*1000, 1000){
@@ -77,7 +86,7 @@ public class MainActivity extends Activity {
             public void onFinish() {
                 tvTimeLeft.setText("0 Seconds");
                 v.vibrate(500);
-                tvTimeLeft.setTextColor(Color.BLACK);
+                tvTimeLeft.setTextColor(defaultTextColor);
                 //Toast.makeText(getApplicationContext(), "Times Up!!", Toast.LENGTH_SHORT).show();
                 Log.v(TAG, "End of turn: " + getString(sentence));
 
@@ -89,6 +98,9 @@ public class MainActivity extends Activity {
                 gameStateData.setGameMetaData(gameMetaData);
                 gameStateData.setGameStateData(getString(sentence));
                 gameStateData.saveInBackground();
+
+                //TODO; Check why IO Exception is there and fix it!!!
+                //saveToFile(gameMetaData.getCreatedAt().toString(), getString(sentence));
 
                 activePlayer++;
 
@@ -126,25 +138,37 @@ public class MainActivity extends Activity {
 
 
                 }else{
-                    //Dialog asking user to pass device
-                    AlertDialog dialog = new AlertDialog.Builder(context)
-                            .setMessage("Your turn has now finished. Please pass the device to Player " + activePlayer)
-                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
+                    //If in multiplayer mode, otherwise continue
+                    if(numberOfPlayers > 1){
+                        //Dialog asking user to pass device
+                        AlertDialog dialog = new AlertDialog.Builder(context)
+                                .setMessage("Your turn has now finished. Please pass the device to Player " + activePlayer)
+                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
 
-                                    tvActivePlayer.setText("Player " + activePlayer);
-                                    if (activePlayer == 1){
-                                        Toast.makeText(getApplicationContext(), "Round " + roundNumber, Toast.LENGTH_SHORT).show();
-                                        tvRound.setText("Round " + roundNumber);
+                                        tvActivePlayer.setText("Player " + activePlayer);
+                                        if (activePlayer == 1) {
+                                            Toast.makeText(getApplicationContext(), "Round " + roundNumber, Toast.LENGTH_SHORT).show();
+                                            tvRound.setText("Round " + roundNumber);
+                                        }
+                                        tvTimeLeft.setText(turnTime + " Seconds");
+                                        //Play
+                                        playGame();
                                     }
-                                    tvTimeLeft.setText(turnTime + " Seconds");
-                                    //Play
-                                    playGame();
-                                }
-                            }).setCancelable(false).create();
-                    dialog.show();
+                                }).setCancelable(false).create();
+                        dialog.show();
+                    } else{
+                        tvActivePlayer.setText("Player " + activePlayer);
+                        if (activePlayer == 1) {
+                            Toast.makeText(getApplicationContext(), "Round " + roundNumber, Toast.LENGTH_SHORT).show();
+                            tvRound.setText("Round " + roundNumber);
+                        }
+                        tvTimeLeft.setText(turnTime + " Seconds");
+                        //Play
+                        playGame();
+                    }
                 }
             }
         };
@@ -164,6 +188,7 @@ public class MainActivity extends Activity {
         s = s.substring(1,s.length() - 1);
         //Remove commas in the string
         s = s.replaceAll(",", "");
+        s = s.trim();
         return s;
     }
 
@@ -213,6 +238,30 @@ public class MainActivity extends Activity {
                     }
                 }).setCancelable(false).create();
         dialog2.show();
+    }
+
+    private void saveToFile(String objectId, String fileContents){
+        String root = Environment.getExternalStorageDirectory().toString();
+        File myDir = new File(root + "/Anagram Game/" + objectId);
+        myDir.mkdirs();
+        String fileName = objectId + ".txt";
+        File file = new File(myDir, fileName);
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            FileOutputStream fos = new FileOutputStream(file, true);
+            OutputStreamWriter osw = new OutputStreamWriter(fos);
+            osw.write(fileContents + "\r\n");
+            osw.flush();
+            osw.close();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
     }
 
     @Override

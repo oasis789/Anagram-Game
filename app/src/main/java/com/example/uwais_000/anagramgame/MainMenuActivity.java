@@ -32,10 +32,8 @@ public class MainMenuActivity extends ActionBarActivity implements View.OnClickL
         switch (v.getId()){
 
             case R.id.btnSinglePlayer:
-                Intent singlePlayerIntent = new Intent(this, MainActivity.class);
+                Intent singlePlayerIntent = new Intent(this, StartActivity.class);
                 singlePlayerIntent.putExtra(GameMetaData.NUMBER_OF_PLAYERS_KEY, 1);
-                singlePlayerIntent.putExtra(GameMetaData.TURN_TIME_KEY, 3*60);
-                singlePlayerIntent.putExtra(GameMetaData.NUMBER_OF_ROUNDS_KEY, 1);
                 startActivity(singlePlayerIntent);
                 break;
 

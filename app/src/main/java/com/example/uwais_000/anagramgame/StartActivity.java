@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 
 import com.parse.ParseObject;
@@ -21,12 +22,16 @@ public class StartActivity extends ActionBarActivity implements AdapterView.OnIt
     int[] playerArray, timeArray, roundsArray;
     int playerSelected, timeSelected, roundsSelected;
     Button playButton;
+    boolean singlePlayerMode = false;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
+        if(getIntent().getIntExtra(GameMetaData.NUMBER_OF_PLAYERS_KEY, 2) == 1){
+            singlePlayerMode = true;
+        }
 
         //Integer arrays of the equivalent data used in string arrays to populate spinners
         playerArray = new int[] {2,3,4,5};
@@ -39,6 +44,12 @@ public class StartActivity extends ActionBarActivity implements AdapterView.OnIt
         roundsSelected = roundsArray[0];
 
         SetupSpinners();
+
+        if(singlePlayerMode){
+            LinearLayout llPlayers = (LinearLayout) findViewById(R.id.llPlayers);
+            llPlayers.setVisibility(View.GONE);
+            playerSelected = 1;
+        }
 
         playButton = (Button) findViewById(R.id.btnPlay);
         playButton.setOnClickListener(new View.OnClickListener() {
