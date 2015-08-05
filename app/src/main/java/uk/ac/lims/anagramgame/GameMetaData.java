@@ -1,4 +1,4 @@
-package com.example.uwais_000.anagramgame;
+package uk.ac.lims.anagramgame;
 
 import com.parse.ParseClassName;
 import com.parse.ParseObject;

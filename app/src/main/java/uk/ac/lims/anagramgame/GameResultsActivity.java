@@ -1,17 +1,17 @@
-package com.example.uwais_000.anagramgame;
+package uk.ac.lims.anagramgame;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+
+import com.example.uwais_000.anagramgame.R;
 
 import java.util.ArrayList;
 

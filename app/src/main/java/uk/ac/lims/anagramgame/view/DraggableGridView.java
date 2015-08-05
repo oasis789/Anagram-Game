@@ -3,7 +3,7 @@
 // - improve timer performance (especially on Eee Pad)
 // - improve child rearranging
 
-package com.example.uwais_000.anagramgame.view;
+package uk.ac.lims.anagramgame.view;
 
 import java.util.Collections;
 import java.util.ArrayList;
@@ -13,10 +13,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;

@@ -4,7 +4,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context="com.example.uwais_000.anagramgame.GameResultsActivity">
+    tools:context="uk.ac.lims.anagramgame.GameResultsActivity">
 
     <TextView android:layout_height="wrap_content" android:layout_width="wrap_content" android:text="Original Sentence" android:layout_gravity="left" android:textSize="18sp" android:padding="5dp"
         android:id="@+id/tvOriginalLbl" android:textStyle="bold"/>

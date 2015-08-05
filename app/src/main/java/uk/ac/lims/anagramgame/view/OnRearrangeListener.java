@@ -1,4 +1,4 @@
-package com.example.uwais_000.anagramgame.view;
+package uk.ac.lims.anagramgame.view;
 
 public interface OnRearrangeListener {
 	

@@ -89,13 +89,13 @@
         android:layout_below="@+id/llHeader"
         android:id="@+id/view" />
 
-        <com.example.uwais_000.anagramgame.view.DraggableGridView
+        <uk.ac.lims.anagramgame.view.DraggableGridView
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:id="@+id/gridView"
             android:layout_centerHorizontal="true"
             android:layout_below="@+id/view"
             android:layout_alignParentBottom="true">
-        </com.example.uwais_000.anagramgame.view.DraggableGridView>
+        </uk.ac.lims.anagramgame.view.DraggableGridView>
 
 </RelativeLayout>

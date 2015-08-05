@@ -1,5 +1,6 @@
-package com.example.uwais_000.anagramgame;
+package uk.ac.lims.anagramgame;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -13,7 +14,13 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 
-import com.parse.ParseObject;
+import com.example.uwais_000.anagramgame.R;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.games.Games;
+import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchConfig;
+import com.google.android.gms.plus.Plus;
+
+import java.util.ArrayList;
 
 
 public class StartActivity extends ActionBarActivity implements AdapterView.OnItemSelectedListener {
@@ -22,16 +29,23 @@ public class StartActivity extends ActionBarActivity implements AdapterView.OnIt
     int[] playerArray, timeArray, roundsArray;
     int playerSelected, timeSelected, roundsSelected;
     Button playButton;
-    boolean singlePlayerMode = false;
+    int numberOfPlayers;
+    private GoogleApiClient mGoogleApiClient;
+    private static int RC_SIGN_IN = 9001;
+    final static int RC_SELECT_PLAYERS = 10000;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
-        if(getIntent().getIntExtra(GameMetaData.NUMBER_OF_PLAYERS_KEY, 2) == 1){
-            singlePlayerMode = true;
-        }
+        numberOfPlayers = getIntent().getIntExtra(GameMetaData.NUMBER_OF_PLAYERS_KEY, 2);
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Plus.API).addScope(Plus.SCOPE_PLUS_LOGIN)
+                .addApi(Games.API).addScope(Games.SCOPE_GAMES)
+                .build();
+        mGoogleApiClient.connect();
 
         //Integer arrays of the equivalent data used in string arrays to populate spinners
         playerArray = new int[] {2,3,4,5};
@@ -45,9 +59,14 @@ public class StartActivity extends ActionBarActivity implements AdapterView.OnIt
 
         SetupSpinners();
 
-        if(singlePlayerMode){
+        //If single player or online multiplayer remove Players Spinner
+        if(numberOfPlayers < 2){
             LinearLayout llPlayers = (LinearLayout) findViewById(R.id.llPlayers);
             llPlayers.setVisibility(View.GONE);
+        }
+
+        //If single Player mode
+        if(numberOfPlayers == 1){
             playerSelected = 1;
         }
 
@@ -56,14 +75,67 @@ public class StartActivity extends ActionBarActivity implements AdapterView.OnIt
             @Override
             public void onClick(View v) {
                 //On Play Button Clicked
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                intent.putExtra(GameMetaData.NUMBER_OF_PLAYERS_KEY, playerSelected);
-                intent.putExtra(GameMetaData.TURN_TIME_KEY, timeSelected);
-                intent.putExtra(GameMetaData.NUMBER_OF_ROUNDS_KEY, roundsSelected);
-                startActivity(intent);
-                finish();
+                //If single player or local multiplayer mode
+                if(numberOfPlayers > 0) {
+                    startGame();
+                }else{
+                    //Start google play UI to choose players
+                    Intent intent =
+                            Games.TurnBasedMultiplayer.getSelectOpponentsIntent(mGoogleApiClient, 1, 4, false);
+                    startActivityForResult(intent, RC_SELECT_PLAYERS);
+
+                }
             }
         });
+    }
+
+    private void startGame() {
+        Intent intent = new Intent(getApplicationContext(), LocalAnagramGameActivity.class);
+        intent.putExtra(GameMetaData.NUMBER_OF_PLAYERS_KEY, playerSelected);
+        intent.putExtra(GameMetaData.TURN_TIME_KEY, timeSelected);
+        intent.putExtra(GameMetaData.NUMBER_OF_ROUNDS_KEY, roundsSelected);
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_SELECT_PLAYERS) {
+            if (resultCode != Activity.RESULT_OK) {
+                // user canceled
+                return;
+            }
+
+            // Get the invitee list.
+            final ArrayList<String> invitees =
+                    data.getStringArrayListExtra(Games.EXTRA_PLAYER_IDS);
+            numberOfPlayers = invitees.size();
+            Log.v("Start Activity", "Number of Players: " + numberOfPlayers);
+            startGame();
+
+            // Get auto-match criteria.
+            /**Bundle autoMatchCriteria = null;
+            int minAutoMatchPlayers = data.getIntExtra(
+                    Multiplayer.EXTRA_MIN_AUTOMATCH_PLAYERS, 0);
+            int maxAutoMatchPlayers = data.getIntExtra(
+                    Multiplayer.EXTRA_MAX_AUTOMATCH_PLAYERS, 0);
+            if (minAutoMatchPlayers > 0) {
+                autoMatchCriteria = RoomConfig.createAutoMatchCriteria(
+                        minAutoMatchPlayers, maxAutoMatchPlayers, 0);
+            } else {
+                autoMatchCriteria = null;
+            }*/
+
+            TurnBasedMatchConfig tbmc = TurnBasedMatchConfig.builder()
+                    .addInvitedPlayers(invitees)
+                    .build();
+
+            // Create and start the match.
+            //Games.TurnBasedMultiplayer
+            //        .createMatch(mGoogleApiClient, tbmc)
+             //       .setResultCallback(new MatchInitiatedCallback());
+        }
     }
 
     private void SetupSpinners() {

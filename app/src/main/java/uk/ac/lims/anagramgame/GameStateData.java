@@ -1,10 +1,7 @@
-package com.example.uwais_000.anagramgame;
+package uk.ac.lims.anagramgame;
 
 import com.parse.ParseClassName;
 import com.parse.ParseObject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by uwais_000 on 28/07/2015.
