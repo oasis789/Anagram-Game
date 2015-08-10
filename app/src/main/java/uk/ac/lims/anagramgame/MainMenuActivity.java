@@ -76,14 +76,14 @@ public class MainMenuActivity extends ActionBarActivity implements View.OnClickL
         }
     }
 
-    @Override
+    /*@Override
     protected void onStop() {
         super.onStop();
         Log.d(TAG, "onStop(): Disconnecting from Google APIs");
         if (mGoogleApiClient.isConnected()) {
-            mGoogleApiClient.disconnect();
+           // mGoogleApiClient.disconnect();
         }
-    }
+    }*/
 
     @Override
     public void onClick(View v) {

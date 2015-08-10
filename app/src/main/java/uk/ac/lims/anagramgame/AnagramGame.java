@@ -26,10 +26,10 @@ public class AnagramGame {
     private char[] anagramSeed = "aaa b c d eeee f g iii l m nn oo rr ss tt u             ".toCharArray();
     private ArrayList<String> sentence = new ArrayList<String>();
     private ArrayList<String> localGameState = new ArrayList<String>();
-    private String TAG = "LocalAnagramGameActivity";
+    private String TAG = "AnagramGame";
     private int numberOfPlayers, turnTime, numberOfRounds;
     private TextView tvActivePlayer, tvTimeLeft, tvRound;
-    private int activePlayer, roundNumber;
+    private int currentPlayerNumber, currentRoundNumber;
     private CountDownTimer timer;
     private Context context;
     private GameMetaData gameMetaData;
@@ -47,13 +47,13 @@ public class AnagramGame {
         this.numberOfPlayers = numberOfPlayers;
         this.numberOfRounds = numberOfRounds;
         this.turnTime = turnTime;
-
-        saveGameMetaData();
-        createLayout();
         setupTimer();
 
-        activePlayer = 1;
-        roundNumber = 1;
+        /**saveGameMetaData();
+        createLayout(null);
+
+        currentPlayerNumber = 1;
+        currentRoundNumber = 1;*/
     }
 
     private void setupTimer() {
@@ -82,15 +82,15 @@ public class AnagramGame {
                 gameEventListener.onTurnFinished();
                 nextPlayer();
 
-                if(activePlayer > numberOfPlayers){
+                if(currentPlayerNumber > numberOfPlayers){
                     ///New Round
-                    activePlayer = 1;
-                    roundNumber++;
-                    Toast.makeText(context, "Round " + roundNumber, Toast.LENGTH_SHORT).show();
+                    currentPlayerNumber = 1;
+                    currentRoundNumber++;
+                    Toast.makeText(context, "Round " + currentRoundNumber, Toast.LENGTH_SHORT).show();
                     gameEventListener.onRoundFinished();
                 }
 
-                if(roundNumber > numberOfRounds){
+                if(currentRoundNumber > numberOfRounds){
                     //Finish the game
                     Toast.makeText(context, "Finished!", Toast.LENGTH_SHORT).show();
                     gameMetaData.setGameFinishedState(true);
@@ -103,7 +103,7 @@ public class AnagramGame {
                     gameEventListener.onGameFinished();
                 }else{
                     //Next Players Turn
-                    gameEventListener.nextPlayersTurn(activePlayer);
+                    gameEventListener.nextPlayersTurn(currentPlayerNumber);
                 }
 
             }
@@ -111,14 +111,16 @@ public class AnagramGame {
     }
 
     public void nextPlayer(){
-        activePlayer++;
+        currentPlayerNumber++;
     }
 
     public void playGame() {
+        Log.d(TAG, "playGame");
+
         setTextOfHeaders();
         //Ready dialog for next player
         AlertDialog dialog2 = new AlertDialog.Builder(context)
-                .setMessage("Player " + activePlayer + "! Are you ready?")
+                .setMessage("Player " + currentPlayerNumber + "! Are you ready?")
                 .setPositiveButton("Let's Play!", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -130,18 +132,22 @@ public class AnagramGame {
         dialog2.show();
     }
 
-    private void saveGameStateData() {
+    public void saveGameStateData() {
+        Log.d(TAG, "saveGameStateData");
+
         localGameState.add(getString(sentence));
         //Save current game state in the cloud
         GameStateData gameStateData = new GameStateData();
-        gameStateData.setCurrentPlayer(activePlayer);
-        gameStateData.setCurrentRound(roundNumber);
+        gameStateData.setCurrentPlayer(currentPlayerNumber);
+        gameStateData.setCurrentRound(currentRoundNumber);
         gameStateData.setGameMetaData(gameMetaData);
         gameStateData.setGameStateData(getString(sentence));
         gameStateData.saveInBackground();
     }
 
-    private void saveGameMetaData() {
+    public void saveGameMetaData() {
+        Log.d(TAG, "saveGameMetaData");
+
         //Save Game meta-data to cloud
         gameMetaData = new GameMetaData();
         gameMetaData.setNumberOfPlayers(numberOfPlayers);
@@ -153,13 +159,20 @@ public class AnagramGame {
     }
 
     private void setTextOfHeaders(){
-        tvActivePlayer.setText("Player " + activePlayer);
-        tvRound.setText("Round " + roundNumber);
+        tvActivePlayer.setText("Player " + currentPlayerNumber);
+        tvRound.setText("Round " + currentRoundNumber);
         tvTimeLeft.setText(turnTime + " Seconds");
     }
 
-    private void createLayout() {
-        for (char letter: anagramSeed){
+    public void createLayout(char[] turnSentence) {
+        if(turnSentence == null){
+            turnSentence = anagramSeed;
+            currentPlayerNumber = 1;
+            currentRoundNumber = 1;
+        }
+        Log.d(TAG, "createLayout: " + String.valueOf(turnSentence));
+
+        for (char letter: turnSentence){
             TextView view = new TextView(context);
 
             view.setText(String.valueOf(letter));
@@ -197,17 +210,29 @@ public class AnagramGame {
         return s;
     }
 
-    public int getActivePlayer(){return activePlayer;}
+    public int getCurrentPlayerNumber(){return currentPlayerNumber;}
 
     public int getNumberOfPlayers(){return numberOfPlayers;}
 
     public int getNumberOfRounds(){return numberOfRounds;}
 
-    public int getRoundNumber(){return roundNumber;}
+    public int getCurrentRoundNumber(){return currentRoundNumber;}
+
+    public GameMetaData getGameMetaData(){return gameMetaData;}
 
     public ArrayList<String> getLocalGameState(){return localGameState;}
 
+    public String getSentence(){return getString(sentence);}
+
     public void setOnGameEventListener(OnGameEventListener l){this.gameEventListener = l;}
+
+    public void setGameMetaData(GameMetaData gameMetaData){this.gameMetaData = gameMetaData;}
+
+    public void setAnagramSentence(ArrayList<String> sentence){this.sentence = sentence;}
+
+    public void setCurrentPlayerNumber(int currentPlayerNumber){this.currentPlayerNumber = currentPlayerNumber;}
+
+    public void setCurrentRoundNumber(int currentRoundNumber){this.currentRoundNumber = currentRoundNumber;}
 
 
 }
