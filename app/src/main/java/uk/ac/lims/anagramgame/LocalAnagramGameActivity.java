@@ -58,7 +58,7 @@ public class LocalAnagramGameActivity extends Activity implements OnGameEventLis
         anagramGame = new AnagramGame(this, dgv, tvActivePlayer, tvTimeLeft, tvRound, numberOfPlayers, numberOfRounds, turnTime);
         anagramGame.setOnGameEventListener(this);
         anagramGame.createLayout(null);
-        anagramGame.saveGameMetaData();
+        anagramGame.saveGameMetaData(numberOfPlayers, numberOfRounds, turnTime);
         anagramGame.playGame();
     }
 

@@ -23,7 +23,7 @@ import uk.ac.lims.anagramgame.view.OnRearrangeListener;
 public class AnagramGame {
 
     private DraggableGridView dgv;
-    private char[] anagramSeed = "aaa b c d eeee f g iii l m nn oo rr ss tt u             ".toCharArray();
+    public char[] anagramSeed = "aaa b c d eeee f g iii l m nn oo rr ss tt u             ".toCharArray();
     private ArrayList<String> sentence = new ArrayList<String>();
     private ArrayList<String> localGameState = new ArrayList<String>();
     private String TAG = "AnagramGame";
@@ -38,7 +38,7 @@ public class AnagramGame {
     public AnagramGame(Context context, DraggableGridView dgv, TextView tvActivePlayer, final TextView tvTimeLeft, TextView tvRound, int numberOfPlayers, int numberOfRounds, int turnTime){
         this.context = context;
         this.dgv = dgv;
-        dgv.setColCount(anagramSeed.length / 4);
+        //dgv.setColCount(anagramSeed.length / 4);
 
         this.tvActivePlayer = tvActivePlayer;
         this.tvTimeLeft = tvTimeLeft;
@@ -54,6 +54,10 @@ public class AnagramGame {
 
         currentPlayerNumber = 1;
         currentRoundNumber = 1;*/
+    }
+
+    public AnagramGame(){
+
     }
 
     private void setupTimer() {
@@ -77,9 +81,10 @@ public class AnagramGame {
                 tvTimeLeft.setTextColor(defaultTextColor);
                 //Toast.makeText(getApplicationContext(), "Times Up!!", Toast.LENGTH_SHORT).show();
                 Log.v(TAG, "End of turn: " + getString(sentence));
-                saveGameStateData();
 
                 gameEventListener.onTurnFinished();
+                saveGameStateData();
+
                 nextPlayer();
 
                 if(currentPlayerNumber > numberOfPlayers){
@@ -145,7 +150,7 @@ public class AnagramGame {
         gameStateData.saveInBackground();
     }
 
-    public void saveGameMetaData() {
+    public void saveGameMetaData(int numberOfPlayers, int numberOfRounds, int turnTime) {
         Log.d(TAG, "saveGameMetaData");
 
         //Save Game meta-data to cloud

@@ -35,12 +35,25 @@ public class StartActivity extends ActionBarActivity implements AdapterView.OnIt
     int numberOfPlayers;
     private static int RC_SIGN_IN = 9001;
     final static int RC_SELECT_PLAYERS = 10000;
+    private boolean isOnlineGame = false;
+    private boolean isSinglePlayerGame = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
         numberOfPlayers = getIntent().getIntExtra(GameMetaData.NUMBER_OF_PLAYERS_KEY, 2);
+        final ArrayList<String> invitees = getIntent().getStringArrayListExtra("invitees");
+
+        if(numberOfPlayers == 1){
+            isSinglePlayerGame = true;
+            numberOfPlayers = 1;
+        }
+
+        if(invitees != null){
+            isOnlineGame = true;
+            numberOfPlayers = invitees.size() + 1;
+        }
 
         //Integer arrays of the equivalent data used in string arrays to populate spinners
         playerArray = new int[] {2,3,4,5};
@@ -55,14 +68,9 @@ public class StartActivity extends ActionBarActivity implements AdapterView.OnIt
         SetupSpinners();
 
         //If single player or online multiplayer remove Players Spinner
-        if(numberOfPlayers < 2){
+        if(isOnlineGame || isSinglePlayerGame){
             LinearLayout llPlayers = (LinearLayout) findViewById(R.id.llPlayers);
             llPlayers.setVisibility(View.GONE);
-        }
-
-        //If single Player mode
-        if(numberOfPlayers == 1){
-            playerSelected = 1;
         }
 
         playButton = (Button) findViewById(R.id.btnPlay);
@@ -71,20 +79,18 @@ public class StartActivity extends ActionBarActivity implements AdapterView.OnIt
             public void onClick(View v) {
                 //On Play Button Clicked
                 //If single player or local multiplayer mode
-                if(numberOfPlayers > 0) {
+                if(!isOnlineGame) {
                     startLocalGame();
                 }else{
                     //Start google play UI to choose players
-                    //TODO: Move player select UI in online Anagram game Activity
                     Intent onlineGameIntent = new Intent(getApplicationContext(), OnlineAnagramGameActivity.class);
-                    //onlineGameIntent.putExtra(GameMetaData.NUMBER_OF_PLAYERS_KEY, playerSelected);
+                    onlineGameIntent.putExtra(GameMetaData.NUMBER_OF_PLAYERS_KEY, playerSelected);
                     onlineGameIntent.putExtra(GameMetaData.TURN_TIME_KEY, timeSelected);
                     onlineGameIntent.putExtra(GameMetaData.NUMBER_OF_ROUNDS_KEY, roundsSelected);
+                    onlineGameIntent.putStringArrayListExtra("invitees", invitees);
                     // mGoogleApiClient.disconnect();
                     startActivity(onlineGameIntent);
                     //finish();
-
-
                 }
             }
         });

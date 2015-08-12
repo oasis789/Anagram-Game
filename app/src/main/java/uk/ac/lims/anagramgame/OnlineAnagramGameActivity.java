@@ -72,6 +72,8 @@ public class OnlineAnagramGameActivity extends Activity implements OnGameEventLi
         Intent intent = getIntent();
         numberOfRounds = intent.getIntExtra(GameMetaData.NUMBER_OF_ROUNDS_KEY, 3);
         turnTime = intent.getIntExtra(GameMetaData.TURN_TIME_KEY, 30);
+        numberOfPlayers = intent.getIntExtra(GameMetaData.NUMBER_OF_PLAYERS_KEY, 2);
+        invitees = intent.getStringArrayListExtra("invitees");
 
         context = this;
         tvActivePlayer = (TextView) findViewById(R.id.tvActivePlayer);
@@ -79,38 +81,15 @@ public class OnlineAnagramGameActivity extends Activity implements OnGameEventLi
         tvRound = (TextView) findViewById(R.id.tvRound);
         dgv = (DraggableGridView) findViewById(R.id.gridView);
         dgv.setColCount(14);
-    }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RC_SELECT_PLAYERS) {
-            if (resultCode != Activity.RESULT_OK) {
-                // user canceled
-                return;
-            }
+        TurnBasedMatch match = intent.getExtras().getParcelable("match");
 
-            // Get the invitee list.
-            final ArrayList<String> invitees =
-                    data.getStringArrayListExtra(Games.EXTRA_PLAYER_IDS);
-            numberOfPlayers = invitees.size() + 1;
-
-            TurnBasedMatchConfig tbmc = TurnBasedMatchConfig.builder()
-                    .addInvitedPlayers(invitees)
-                    .build();
-
-            // Create and start the match.
-            Games.TurnBasedMultiplayer.createMatch(mGoogleApiClient, tbmc)
-                    .setResultCallback(new ResultCallback<TurnBasedMultiplayer.InitiateMatchResult>() {
-                        @Override
-                        public void onResult(TurnBasedMultiplayer.InitiateMatchResult initiateMatchResult) {
-                            processResult(initiateMatchResult);
-                        }
-                    });
-
-            showSpinner();
+        if(match != null){
+            mTurnBasedMatch = match;
+            updateMatch(match);
         }
     }
+
 
     @Override
     protected void onStart() {
@@ -179,18 +158,19 @@ public class OnlineAnagramGameActivity extends Activity implements OnGameEventLi
     //Called when match is first started!!!
     public void startMatch(TurnBasedMatch match) {
         Log.d(TAG, "startMatch - TurnBasedMatch");
-        anagramGame = new AnagramGame(context, dgv, tvActivePlayer, tvTimeLeft, tvRound, numberOfPlayers, numberOfRounds, turnTime);
-        anagramGame.setOnGameEventListener(this);
+        //anagramGame = new AnagramGame(context, dgv, tvActivePlayer, tvTimeLeft, tvRound, numberOfPlayers, numberOfRounds, turnTime);
+        //anagramGame.setOnGameEventListener(this);
+        //anagramGame.createLayout(null);
 
+        //Offload data and persist to Google Play servers
+        //anagramGame = new AnagramGame();
 
-        mTurnData = new AnagramTurn();
+        /**mTurnData = new AnagramTurn();
         mTurnData.activePlayer = 1;
         mTurnData.currentRound = 1;
-
-        // Some basic turn data
-        anagramGame.createLayout(null);
-        anagramGame.saveGameMetaData();
+        mTurnData.sentence = String.valueOf(anagramGame.anagramSeed);
         mTurnData.gameMetaData = anagramGame.getGameMetaData();
+        Log.d(TAG, "gamemetadata id "+ anagramGame.getGameMetaData().getObjectId());*/
 
         mMatch = match;
 
@@ -200,13 +180,14 @@ public class OnlineAnagramGameActivity extends Activity implements OnGameEventLi
         showSpinner();
 
         Games.TurnBasedMultiplayer.takeTurn(mGoogleApiClient, match.getMatchId(),
-                mTurnData.persist(), myParticipantId).setResultCallback(
+                null, myParticipantId).setResultCallback(
                 new ResultCallback<TurnBasedMultiplayer.UpdateMatchResult>() {
                     @Override
                     public void onResult(TurnBasedMultiplayer.UpdateMatchResult result) {
                         processResult(result);
                     }
                 });
+        mTurnData = null;
     }
 
     // This is the main function that gets called when players choose a match
@@ -265,9 +246,24 @@ public class OnlineAnagramGameActivity extends Activity implements OnGameEventLi
     }
 
     private void setGameplayUI() {
-        Log.d(TAG, "setGameplayUI");
+        anagramGame = new AnagramGame(context, dgv, tvActivePlayer, tvTimeLeft, tvRound, numberOfPlayers, numberOfRounds, turnTime);
+        anagramGame.setOnGameEventListener(this);
         isDoingTurn = true;
-        anagramGame.createLayout(mTurnData.sentence.toCharArray());
+        //If not first turn
+        if(mTurnData.turnCounter != 0){
+            anagramGame.setCurrentPlayerNumber(mTurnData.activePlayer);
+            anagramGame.setCurrentRoundNumber(mTurnData.currentRound);
+            char[] test = mTurnData.sentence.toCharArray();
+            Log.d(TAG, "Checking turn data sentence: " + String.valueOf(test));
+            anagramGame.createLayout(test);
+            Log.d(TAG, "setGameplayUI not first turn");
+        }else{
+            anagramGame.setCurrentPlayerNumber(1);
+            anagramGame.setCurrentRoundNumber(1);
+            anagramGame.createLayout(null);
+            anagramGame.saveGameMetaData(numberOfPlayers, numberOfRounds, turnTime);
+            Log.d(TAG, "setGameplayUI first turn");
+        }
         anagramGame.playGame();
     }
 
@@ -364,6 +360,9 @@ public class OnlineAnagramGameActivity extends Activity implements OnGameEventLi
 
     @Override
     public void onTurnFinished() {
+        if(mTurnData.turnCounter != 0) {
+            anagramGame.setGameMetaData(mTurnData.gameMetaData);
+        }
     }
 
     @Override
@@ -440,10 +439,23 @@ public class OnlineAnagramGameActivity extends Activity implements OnGameEventLi
                 updateMatch(mTurnBasedMatch);
                 return;
             }
-        }else{
-            Intent inviteIntent =
-                    Games.TurnBasedMultiplayer.getSelectOpponentsIntent(mGoogleApiClient, 1, 4, false);
-            startActivityForResult(inviteIntent, RC_SELECT_PLAYERS);
+        }
+
+        if(invitees != null){
+            TurnBasedMatchConfig tbmc = TurnBasedMatchConfig.builder()
+                    .addInvitedPlayers(invitees)
+                    .build();
+
+            // Create and start the match.
+            Games.TurnBasedMultiplayer.createMatch(mGoogleApiClient, tbmc)
+                    .setResultCallback(new ResultCallback<TurnBasedMultiplayer.InitiateMatchResult>() {
+                        @Override
+                        public void onResult(TurnBasedMultiplayer.InitiateMatchResult initiateMatchResult) {
+                            processResult(initiateMatchResult);
+                        }
+                    });
+
+            showSpinner();
         }
     }
 

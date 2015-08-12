@@ -30,7 +30,7 @@ public class AnagramTurn {
     public byte[] persist(){
         JSONObject retVal = new JSONObject();
         try{
-            retVal.put("sentence",sentence);
+            retVal.put("sentence", sentence);
             retVal.put("turnCounter", turnCounter);
             retVal.put("activePlayer", activePlayer);
             retVal.put("currentRound", currentRound);
@@ -89,8 +89,11 @@ public class AnagramTurn {
                     public void done(GameMetaData gameMetaData, ParseException e) {
                         if(e == null){
                             retVal.gameMetaData = gameMetaData;
+                            Log.d(TAG, "GameMetaData successfully retrieved from Parse servers");
+                            Log.d(TAG, "GameMetaData Id: " + retVal.gameMetaData.getObjectId());
                         }else{
                             e.printStackTrace();
+                            Log.d(TAG, "Failed to retrieve GameMetaData from Parse servers");
                         }
                     }
                 });

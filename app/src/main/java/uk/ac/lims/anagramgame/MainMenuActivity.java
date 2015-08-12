@@ -1,5 +1,6 @@
 package uk.ac.lims.anagramgame;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -15,16 +16,21 @@ import com.google.android.gms.*;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.games.Games;
+import com.google.android.gms.games.multiplayer.Multiplayer;
+import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatch;
+import com.google.android.gms.games.multiplayer.turnbased.TurnBasedMatchEntity;
 import com.google.android.gms.plus.Plus;
 import com.google.example.games.basegameutils.BaseGameUtils;
 
 
 import com.example.uwais_000.anagramgame.R;
 
+import java.util.ArrayList;
+
 
 public class MainMenuActivity extends ActionBarActivity implements View.OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-    private Button singlePlayer, localMultiplayer, onlineMultiplayer;
+    private Button singlePlayer, localMultiplayer, onlineMultiplayer, viewOnlineMatches;
     private GoogleApiClient mGoogleApiClient;
 
     // For our intents
@@ -54,6 +60,8 @@ public class MainMenuActivity extends ActionBarActivity implements View.OnClickL
         localMultiplayer.setOnClickListener(this);
         onlineMultiplayer = (Button) findViewById(R.id.btnOnlineMultiplayer);
         onlineMultiplayer.setOnClickListener(this);
+        viewOnlineMatches = (Button) findViewById(R.id.btnViewOnlineMatches);
+        viewOnlineMatches.setOnClickListener(this);
 
         // Create the Google API Client with access to Plus and Games
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -103,18 +111,22 @@ public class MainMenuActivity extends ActionBarActivity implements View.OnClickL
             case R.id.btnOnlineMultiplayer:
                 if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
                     // Call a Play Games services API method, for example:
-                    Intent onlineMultiplayerIntent = new Intent(this, StartActivity.class);
-                    onlineMultiplayerIntent.putExtra(GameMetaData.NUMBER_OF_PLAYERS_KEY, -1);
-                    startActivity(onlineMultiplayerIntent);
-                    //Intent intent =
-                    //        Games.TurnBasedMultiplayer.getSelectOpponentsIntent(mGoogleApiClient, 1, 4, false);
-                    //startActivityForResult(intent, RC_SELECT_PLAYERS);
+                    //Intent onlineMultiplayerIntent = new Intent(this, StartActivity.class);
+                    //onlineMultiplayerIntent.putExtra(GameMetaData.NUMBER_OF_PLAYERS_KEY, -1);
+                    //startActivity(onlineMultiplayerIntent);
+                    Intent intent = Games.TurnBasedMultiplayer.getSelectOpponentsIntent(mGoogleApiClient, 1, 4, false);
+                    startActivityForResult(intent, RC_SELECT_PLAYERS);
                 } else {
                     // Alternative implementation (or warn user that they must
                     // sign in to use this feature)
                     Toast.makeText(getApplicationContext(), "Please sign in to Google Play Games first", Toast.LENGTH_SHORT).show();
                 }
 
+                break;
+
+            case R.id.btnViewOnlineMatches:
+                Intent viewOnlineMatches = Games.TurnBasedMultiplayer.getInboxIntent(mGoogleApiClient);
+                startActivityForResult(viewOnlineMatches, RC_LOOK_AT_MATCHES);
                 break;
 
             case R.id.sign_in_button:
@@ -228,6 +240,40 @@ public class MainMenuActivity extends ActionBarActivity implements View.OnClickL
                 BaseGameUtils.showActivityResultError(this,
                         requestCode, resultCode, R.string.signin_failure);
             }
+        }else if(requestCode == RC_LOOK_AT_MATCHES){
+            // Returning from the 'Select Match' dialog
+
+            if (resultCode != Activity.RESULT_OK) {
+                // user canceled
+                return;
+            }
+
+            TurnBasedMatch match = data
+                    .getParcelableExtra(Multiplayer.EXTRA_TURN_BASED_MATCH);
+
+            if (match != null) {
+                Intent startExistingOnlineMatch = new Intent(this, OnlineAnagramGameActivity.class);
+                startExistingOnlineMatch.putExtra("match", new TurnBasedMatchEntity(match));
+                startActivity(startExistingOnlineMatch);
+            }
+
+            Log.d(TAG, "Match = " + match);
+        } else if(requestCode == RC_SELECT_PLAYERS){
+            // Returned from 'Select players to Invite' dialog
+
+            if (resultCode != Activity.RESULT_OK) {
+                // user canceled
+                return;
+            }
+
+            // get the invitee list
+            final ArrayList<String> invitees = data
+                    .getStringArrayListExtra(Games.EXTRA_PLAYER_IDS);
+
+            //Start Activity to choose game settings
+            Intent onlineMultiplayerIntent = new Intent(this, StartActivity.class);
+            onlineMultiplayerIntent.putStringArrayListExtra("invitees", invitees);
+            startActivity(onlineMultiplayerIntent);
         }
     }
 
